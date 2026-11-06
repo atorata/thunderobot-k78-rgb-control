@@ -21,7 +21,7 @@ import time
 
 import k78ctl
 from k78ctl import COLS, ROWS, KEYMAP, LiveRGB
-from k78effects import EFFECTS, ORDER, hsv, mix, new_ctx
+from k78effects import EFFECTS, ORDER, POS_GROUP, hsv, mix, new_ctx
 
 user32 = ctypes.WinDLL("user32")
 kernel32 = ctypes.WinDLL("kernel32")
@@ -81,6 +81,7 @@ DEFAULT_SETTINGS = {
     "bg_color": [0, 0, 0],
     "static_keys": {},              # "W": [255,255,255] ...
     "group_colors": {},             # "letters": [r,g,b] ... (boşsa varsayılan grup renkleri)
+    "group_press_colors": {},       # Tuş grupları efektinde grup başına basınca rengi (boşsa reactive_color)
     "speed": 0.3,                   # wave/breath hızı
     "brightness": 1.0,              # 0..1
     "reactive": True,
@@ -166,12 +167,14 @@ class Engine:
         if s["reactive"]:
             now = time.perf_counter()
             decay, spread = s["reactive_decay"], s["reactive_spread"]
-            rc = tuple(s["reactive_color"])
+            rc0 = tuple(s["reactive_color"])
+            gpress = s["group_press_colors"] if base == "groups" else {}
             for (hr, hc), t0 in list(self._hits.items()):
                 age = now - t0
                 if age > decay:
                     del self._hits[(hr, hc)]
                     continue
+                rc = tuple(gpress.get(POS_GROUP.get((hr, hc)), rc0))
                 k_time = 1 - age / decay
                 rad = spread * (0.4 + age / decay)
                 for r in range(1, ROWS):
@@ -217,6 +220,7 @@ class Engine:
                 s = dict(self.settings)
                 s["static_keys"] = dict(self.settings["static_keys"])
                 s["group_colors"] = dict(self.settings["group_colors"])
+                s["group_press_colors"] = dict(self.settings["group_press_colors"])
             if s["reactive"] or EFFECTS.get(s["base"], (0, 0, False))[2]:
                 self._poll_keys()
             frame = self._render(time.perf_counter() - self._t0, s)

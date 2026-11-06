@@ -44,7 +44,7 @@ So:
 
 ## Installation (Windows)
 
-The `K78RGB-Setup-1.0.0.exe` installer:
+The `K78RGB-Setup-1.1.0.exe` installer:
 
 - Needs no administrator rights; installs into the user's own `Programs` folder. No Python required.
 - Adds a Start menu shortcut, plus an optional desktop shortcut and "Start with Windows".
@@ -55,7 +55,7 @@ The `K78RGB-Setup-1.0.0.exe` installer:
 To build the installer yourself you need Python 3.10+ and [Inno Setup](https://jrsoftware.org/isinfo.php):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File build.ps1   # dist\K78RGB\ and release\K78RGB-Setup-1.0.0.exe
+powershell -ExecutionPolicy Bypass -File build.ps1   # dist\K78RGB\ and release\K78RGB-Setup-1.1.0.exe
 ```
 
 ## Usage

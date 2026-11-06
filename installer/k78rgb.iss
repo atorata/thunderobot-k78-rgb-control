@@ -2,7 +2,7 @@
 ; Derleme: build.ps1  (önce PyInstaller ile dist\K78RGB üretilir)
 
 #define AppName "K78 RGB"
-#define AppVersion "1.0.0"
+#define AppVersion "1.1.0"
 #define AppExe "K78RGB.exe"
 #define RunKey "Software\Microsoft\Windows\CurrentVersion\Run"
 #define RunName "K78Isik"

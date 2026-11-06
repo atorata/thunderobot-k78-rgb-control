@@ -79,7 +79,7 @@ PALETTE = [(255, 255, 255), (255, 40, 40), (255, 130, 0), (255, 220, 0), (40, 23
 
 
 # ------------------------------------------------------------------ otomatik başlatma
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.1.0"
 FROZEN = getattr(sys, "frozen", False)
 
 
@@ -565,17 +565,28 @@ class App(tk.Tk):
         # Tuş grupları ayarları
         self.group_box = tk.Frame(self.dyn, bg=C["card"])
         tk.Label(self.group_box, text="Grup renkleri", bg=C["card"], fg=C["text"], font=F(10, "bold")).pack(anchor="w")
-        tk.Label(self.group_box, text="Renge tıklayıp değiştirin.", bg=C["card"], fg=C["muted"],
-                 font=F(9)).pack(anchor="w", pady=(0, 6))
+        tk.Label(self.group_box, text="Renge tıklayıp değiştirin. Sağdaki renk, o gruptan\n"
+                                      "bir tuşa basınca çıkan parlamadır.", bg=C["card"], fg=C["muted"],
+                 font=F(9), justify="left").pack(anchor="w", pady=(0, 6))
+        hdr = tk.Frame(self.group_box, bg=C["card"])
+        hdr.pack(fill="x")
+        tk.Label(hdr, text="Renk", bg=C["card"], fg=C["faint"], font=F(8), width=5, anchor="w").pack(side="left")
+        tk.Label(hdr, text="Basınca", bg=C["card"], fg=C["faint"], font=F(8)).pack(side="left")
         self.group_sw = {}
+        self.group_press_sw = {}
         for gkey, gname, _ in GROUPS:
             r = tk.Frame(self.group_box, bg=C["card"])
             r.pack(fill="x", pady=1)
             sw = Swatch(r, self._group_color(gkey), lambda k=gkey: self._pick_group(k), size=22)
             sw.pack(side="left")
+            psw = Swatch(r, self._group_press_color(gkey), lambda k=gkey: self._pick_group_press(k), size=22)
+            psw.pack(side="left", padx=(14, 0))
             tk.Label(r, text=gname, bg=C["card"], fg=C["text"], font=F(9)).pack(side="left", padx=(8, 0))
             self.group_sw[gkey] = sw
-        button(self.group_box, "Varsayılan renklere dön", self._reset_groups).pack(anchor="w", pady=(10, 0))
+            self.group_press_sw[gkey] = psw
+        tk.Label(self.group_box, text="Basınca rengi için Katmanlar'da \"Tuşa basınca parla\" açık olmalı.",
+                 bg=C["card"], fg=C["faint"], font=F(8)).pack(anchor="w", pady=(6, 0))
+        button(self.group_box, "Varsayılan renklere dön", self._reset_groups).pack(anchor="w", pady=(8, 0))
         tk.Label(opt, text="İpucu: kartın üzerindeki önizleme\nefektin klavyede nasıl görüneceğini gösterir.",
                  bg=C["card"], fg=C["faint"], font=F(8), justify="left").pack(anchor="w", side="bottom")
         self._select_effect(self.engine.get("base") if self.engine.get("base") in EFFECTS else "wave", apply=False)
@@ -616,10 +627,25 @@ class App(tk.Tk):
             self.engine.update(group_colors=gc)
             self.group_sw[gkey].set(gc[gkey])
 
+    def _group_press_color(self, gkey):
+        return self.engine.get("group_press_colors").get(gkey, self.engine.get("reactive_color"))
+
+    def _pick_group_press(self, gkey):
+        rgb, _ = colorchooser.askcolor(color=hexcol(self._group_press_color(gkey)), parent=self)
+        if rgb:
+            gp = dict(self.engine.get("group_press_colors"))
+            gp[gkey] = [int(x) for x in rgb]
+            self.engine.update(group_press_colors=gp)
+            self.group_press_sw[gkey].set(gp[gkey])
+
+    def _refresh_group_sw(self):
+        for gkey in self.group_sw:
+            self.group_sw[gkey].set(self._group_color(gkey))
+            self.group_press_sw[gkey].set(self._group_press_color(gkey))
+
     def _reset_groups(self):
-        self.engine.update(group_colors={})
-        for gkey, sw in self.group_sw.items():
-            sw.set(GROUP_DEFAULTS[gkey])
+        self.engine.update(group_colors={}, group_press_colors={})
+        self._refresh_group_sw()
 
     def _set_color_mode(self, v):
         self.engine.update(colorful=(v == "rainbow"))
@@ -630,6 +656,8 @@ class App(tk.Tk):
             c = [int(x) for x in rgb]
             self.engine.update(**{setting: c})
             swatch.set(c)
+            if setting == "reactive_color":          # özel rengi olmayan grupların "basınca" kutusu
+                self._refresh_group_sw()
 
     def _thumb_tick(self):
         if self.page == "effects" and self.state() != "withdrawn":
@@ -882,8 +910,7 @@ class App(tk.Tk):
         self.seg_exit.set(g("on_exit"))
         self.sw_exit.set(g("exit_color"))
         self.s_fps.set(g("fps"))
-        for gkey, sw in self.group_sw.items():
-            sw.set(self._group_color(gkey))
+        self._refresh_group_sw()
         self._update_paint_count()
 
     def _hover_key(self, name):
