@@ -43,7 +43,42 @@ def tint(ctx, h):
 
 
 class Ctx:
-    __slots__ = ("t", "speed", "color", "colorful", "bg", "presses", "state", "rng")
+    __slots__ = ("t", "speed", "color", "colorful", "bg", "presses", "state", "rng", "groups")
+
+
+# ------------------------------------------------------------------ tuş grupları
+# (anahtar, Türkçe ad, varsayılan renk)
+GROUPS = [
+    ("letters", "Harfler", (0, 150, 255)),
+    ("numbers", "Rakamlar", (255, 150, 0)),
+    ("punct", "Noktalama", (170, 70, 255)),
+    ("mods", "Kontrol tuşları", (255, 30, 70)),
+    ("space", "Boşluk", (255, 255, 255)),
+    ("arrows", "Ok tuşları", (30, 230, 90)),
+    ("numpad", "Numpad", (0, 220, 200)),
+]
+GROUP_DEFAULTS = {k: c for k, _, c in GROUPS}
+_GROUP_KEYS = {
+    "letters": [chr(c) for c in range(ord("A"), ord("Z") + 1)],
+    "numbers": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "="],
+    "punct": ["[", "]", "\\", ";", "'", ",", ".", "/"],
+    "mods": ["ESC", "TAB", "CAPS", "LSHIFT", "RSHIFT", "LCTRL", "WIN", "LALT", "RALT", "FN", "RCTRL", "BKSP", "ENTER"],
+    "space": ["SPACE"],
+    "arrows": ["UP", "DOWN", "LEFT", "RIGHT"],
+    "numpad": ["NUMLK", "KP+", "KP-", "KP0", "KP1", "KP2", "KP3", "KP4", "KP5", "KP6", "KP7", "KP8", "KP9", "KP."],
+}
+
+
+def _build_pos_group():
+    from k78ctl import KEYMAP
+    out = {}
+    for g, names in _GROUP_KEYS.items():
+        for n in names:
+            out[KEYMAP[n]] = g
+    return out
+
+
+POS_GROUP = _build_pos_group()
 
 
 EFFECTS = {}       # anahtar -> (Türkçe ad, fonksiyon, tepkili mi)
@@ -235,6 +270,15 @@ def fx_snake(ctx, f):
         f[r][c] = mix(ctx.bg, tint(ctx, (head - i) / n), k)
 
 
+@effect("groups", "Tuş grupları")
+def fx_groups(ctx, f):
+    custom = ctx.groups or {}
+    for pos, _ in KEYS:
+        g = POS_GROUP.get(pos)
+        if g:
+            f[pos[0]][pos[1]] = tuple(custom.get(g, GROUP_DEFAULTS[g]))
+
+
 @effect("perfect", "Sabit gökkuşağı")
 def fx_rainbow_static(ctx, f):
     for (r, c), (x, y) in KEYS:
@@ -318,7 +362,7 @@ def fx_collision(ctx, f):
                     f[p2[0]][p2[1]] = mix(f[p2[0]][p2[1]], hsv((t0 * 0.37 + 0.5) % 1) if ctx.colorful else col, k)
 
 
-ORDER = ["static", "breath", "spectrum", "wave", "wheel", "neon", "sine", "scan", "windmill", "storm",
+ORDER = ["groups", "static", "breath", "spectrum", "wave", "wheel", "neon", "sine", "scan", "windmill", "storm",
          "waterfall", "raindrops", "stars", "bloom", "snake", "perfect",
          "reaction", "flash", "ripples", "shadow", "collision", "off"]
 assert set(ORDER) == set(EFFECTS), set(ORDER) ^ set(EFFECTS)
@@ -329,4 +373,5 @@ def new_ctx():
     ctx.state = {}
     ctx.rng = random.Random()
     ctx.presses = []
+    ctx.groups = {}
     return ctx

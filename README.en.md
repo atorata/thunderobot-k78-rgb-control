@@ -7,7 +7,7 @@ Live per-key RGB effects with no vendor software and **no flash writes**.
 
 ## Features
 
-- **22 effects:** rainbow wave, rainbow wheel, neon stream, sine wave, scanner, windmill, storm, waterfall,
+- **23 effects:** key groups (letters, numbers, control keys, arrows, numpad… each in its own colour), rainbow wave, rainbow wheel, neon stream, sine wave, scanner, windmill, storm, waterfall,
   raindrops, stars, blossoming, snake… plus keypress effects: reaction, flash away, ripples, shadow, collision.
   Each one can run in rainbow colours or a single colour.
 - **Key painting:** click or drag over the on-screen keyboard to colour keys; painted keys stay on top of the effect.

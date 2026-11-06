@@ -13,7 +13,7 @@ import tkinter as tk
 import winreg
 from tkinter import colorchooser, messagebox, simpledialog
 
-from k78effects import EFFECTS, ORDER, new_ctx
+from k78effects import EFFECTS, GROUP_DEFAULTS, GROUPS, ORDER, new_ctx
 from k78engine import PROFILE_DIR, Engine
 from k78layout import RECTS, WIDTH
 from k78tray import TrayIcon
@@ -49,6 +49,8 @@ def round_rect(cv, x0, y0, x1, y1, r, **kw):
 
 
 DESC = {
+    "groups": "Harfler, rakamlar, noktalama, kontrol tuşları, boşluk, ok tuşları ve numpad farklı renklerde. "
+              "Her grubun rengini aşağıdan seçebilirsiniz.",
     "static": "Tek renk ya da soldan sağa sabit gökkuşağı geçişi.",
     "breath": "Işık yavaşça yanıp söner. Renkli modda her nefeste renk değişir.",
     "spectrum": "Tüm klavye birlikte renkten renge geçer.",
@@ -518,11 +520,16 @@ class App(tk.Tk):
         self.e_tag = tk.Label(opt, text="", bg=C["card"], fg=C["accent_hi"], font=F(9, "bold"))
         self.e_tag.pack(anchor="w", pady=(0, 10))
 
-        tk.Label(opt, text="Renkler", bg=C["card"], fg=C["text"], font=F(10, "bold")).pack(anchor="w")
-        self.seg_color = Segmented(opt, [("rainbow", "Gökkuşağı"), ("mono", "Tek renk")],
+        self.dyn = tk.Frame(opt, bg=C["card"])
+        self.dyn.pack(fill="x")
+        # Standart efekt ayarları
+        self.std_box = tk.Frame(self.dyn, bg=C["card"])
+        std = self.std_box
+        tk.Label(std, text="Renkler", bg=C["card"], fg=C["text"], font=F(10, "bold")).pack(anchor="w")
+        self.seg_color = Segmented(std, [("rainbow", "Gökkuşağı"), ("mono", "Tek renk")],
                                    "rainbow" if self.engine.get("colorful") else "mono", self._set_color_mode)
         self.seg_color.pack(anchor="w", pady=(4, 8))
-        row = tk.Frame(opt, bg=C["card"])
+        row = tk.Frame(std, bg=C["card"])
         row.pack(anchor="w", pady=(0, 10))
         tk.Label(row, text="Efekt rengi", bg=C["card"], fg=C["muted"], font=F(9)).pack(side="left", padx=(0, 8))
         self.sw_base = Swatch(row, self.engine.get("base_color"), lambda: self._pick("base_color", self.sw_base))
@@ -531,10 +538,25 @@ class App(tk.Tk):
         self.sw_bg = Swatch(row, self.engine.get("bg_color"), lambda: self._pick("bg_color", self.sw_bg))
         self.sw_bg.pack(side="left")
 
-        tk.Label(opt, text="Hız", bg=C["card"], fg=C["text"], font=F(10, "bold")).pack(anchor="w")
-        self.s_speed = Slider(opt, 0.05, 2.0, self.engine.get("speed"), lambda v: self.engine.update(speed=v),
+        tk.Label(std, text="Hız", bg=C["card"], fg=C["text"], font=F(10, "bold")).pack(anchor="w")
+        self.s_speed = Slider(std, 0.05, 2.0, self.engine.get("speed"), lambda v: self.engine.update(speed=v),
                               fmt=lambda v: "%.2f×" % (v / 0.3), width=260)
         self.s_speed.pack(anchor="w", pady=(2, 10))
+
+        # Tuş grupları ayarları
+        self.group_box = tk.Frame(self.dyn, bg=C["card"])
+        tk.Label(self.group_box, text="Grup renkleri", bg=C["card"], fg=C["text"], font=F(10, "bold")).pack(anchor="w")
+        tk.Label(self.group_box, text="Renge tıklayıp değiştirin.", bg=C["card"], fg=C["muted"],
+                 font=F(9)).pack(anchor="w", pady=(0, 6))
+        self.group_sw = {}
+        for gkey, gname, _ in GROUPS:
+            r = tk.Frame(self.group_box, bg=C["card"])
+            r.pack(fill="x", pady=1)
+            sw = Swatch(r, self._group_color(gkey), lambda k=gkey: self._pick_group(k), size=22)
+            sw.pack(side="left")
+            tk.Label(r, text=gname, bg=C["card"], fg=C["text"], font=F(9)).pack(side="left", padx=(8, 0))
+            self.group_sw[gkey] = sw
+        button(self.group_box, "Varsayılan renklere dön", self._reset_groups).pack(anchor="w", pady=(10, 0))
         tk.Label(opt, text="İpucu: kartın üzerindeki önizleme\nefektin klavyede nasıl görüneceğini gösterir.",
                  bg=C["card"], fg=C["faint"], font=F(8), justify="left").pack(anchor="w", side="bottom")
         self._select_effect(self.engine.get("base") if self.engine.get("base") in EFFECTS else "wave", apply=False)
@@ -560,6 +582,25 @@ class App(tk.Tk):
         self.e_title.configure(text=name)
         self.e_desc.configure(text=DESC.get(key, ""))
         self.e_tag.configure(text="⌨  Tuşlara basınca çalışır" if reactive else "")
+        show, hide = (self.group_box, self.std_box) if key == "groups" else (self.std_box, self.group_box)
+        hide.pack_forget()
+        show.pack(fill="x")
+
+    def _group_color(self, gkey):
+        return self.engine.get("group_colors").get(gkey, GROUP_DEFAULTS[gkey])
+
+    def _pick_group(self, gkey):
+        rgb, _ = colorchooser.askcolor(color=hexcol(self._group_color(gkey)), parent=self)
+        if rgb:
+            gc = dict(self.engine.get("group_colors"))
+            gc[gkey] = [int(x) for x in rgb]
+            self.engine.update(group_colors=gc)
+            self.group_sw[gkey].set(gc[gkey])
+
+    def _reset_groups(self):
+        self.engine.update(group_colors={})
+        for gkey, sw in self.group_sw.items():
+            sw.set(GROUP_DEFAULTS[gkey])
 
     def _set_color_mode(self, v):
         self.engine.update(colorful=(v == "rainbow"))
@@ -586,6 +627,7 @@ class App(tk.Tk):
                 ctx.t, ctx.speed = t, s["speed"]
                 ctx.color, ctx.colorful, ctx.bg = tuple(s["base_color"]), bool(s["colorful"]), tuple(s["bg_color"])
                 ctx.presses = self._synth
+                ctx.groups = s["group_colors"]
                 f = [[ctx.bg] * 21 for _ in range(6)]
                 EFFECTS[key][1](ctx, f)
                 cd.show(f)
@@ -821,6 +863,8 @@ class App(tk.Tk):
         self.seg_exit.set(g("on_exit"))
         self.sw_exit.set(g("exit_color"))
         self.s_fps.set(g("fps"))
+        for gkey, sw in self.group_sw.items():
+            sw.set(self._group_color(gkey))
         self._update_paint_count()
 
     def _hover_key(self, name):

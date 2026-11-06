@@ -79,6 +79,7 @@ DEFAULT_SETTINGS = {
     "base_color": [0, 120, 255],
     "bg_color": [0, 0, 0],
     "static_keys": {},              # "W": [255,255,255] ...
+    "group_colors": {},             # "letters": [r,g,b] ... (boşsa varsayılan grup renkleri)
     "speed": 0.3,                   # wave/breath hızı
     "brightness": 1.0,              # 0..1
     "reactive": True,
@@ -145,6 +146,7 @@ class Engine:
         ctx.t, ctx.speed = t, s["speed"]
         ctx.color, ctx.colorful, ctx.bg = tuple(s["base_color"]), bool(s["colorful"]), bg
         ctx.presses = [(p, pt - self._t0) for p, pt in self._presses]
+        ctx.groups = s["group_colors"]
         EFFECTS[base][1](ctx, f)
         for name, rgb in s["static_keys"].items():
             pos = KEYMAP.get(name.upper())
@@ -213,6 +215,7 @@ class Engine:
             with self.lock:
                 s = dict(self.settings)
                 s["static_keys"] = dict(self.settings["static_keys"])
+                s["group_colors"] = dict(self.settings["group_colors"])
             if s["reactive"] or EFFECTS.get(s["base"], (0, 0, False))[2]:
                 self._poll_keys()
             frame = self._render(time.perf_counter() - self._t0, s)

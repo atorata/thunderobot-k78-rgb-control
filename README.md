@@ -7,7 +7,7 @@ Thunderobot K78 (kablolu, SinoWealth SH68F90, USB `258A:0049`) klavyesi için a�
 
 ## Özellikler
 
-- **22 efekt:** gökkuşağı dalgası, çark, neon, sinüs, tarayıcı, yel değirmeni, fırtına, şelale, yağmur, yıldızlar, çiçeklenme, yılan…
+- **23 efekt:** tuş grupları (harfler, rakamlar, kontrol tuşları, ok tuşları, numpad… ayrı renklerde), gökkuşağı dalgası, çark, neon, sinüs, tarayıcı, yel değirmeni, fırtına, şelale, yağmur, yıldızlar, çiçeklenme, yılan…
   ve tuşa basınca çalışanlar: tepki, patlama, dalgalanma, gölge, çarpışma. Her biri gökkuşağı ya da tek renk.
 - **Tuş boyama:** önizlemede tuşlara tıklayıp/sürükleyip renk verin; boyamalar efektin üstünde kalır.
 - **Katmanlar:** tuşa basınca parlama, CPU yükü göstergesi (1…0 sırası), Caps/Num Lock göstergesi.
