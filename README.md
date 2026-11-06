@@ -14,6 +14,27 @@ Thunderobot K78 (kablolu, SinoWealth SH68F90, USB `258A:0049`) klavyesi için a�
 - **Profiller**, sistem tepsisinde çalışma, Windows açılışında başlatma, çıkışta klavyenin ne göstereceği.
 - **Komut satırı aracı** (`k78ctl.py`): renk/tuş/pixel komutları, protokol okumaları, korumalı kalıcı profil yazma.
 
+## Flash'a yazmadan kullanın — flash aşınması hakkında
+
+Bu uygulama efektleri **yalnızca klavyenin RAM'ine** gönderir (report 8). Klavyenin flash belleğine dokunmaz ve
+bunun bilinçli bir nedeni var:
+
+- **Flash belleğin ömrü sınırlıdır.** Her yazma, bir sektörün önce silinip sonra yeniden yazılması demektir
+  (K78'de profil sektörü 512 bayt). Flash hücreleri belirli sayıda silme döngüsünden sonra yıpranır; bu sınır
+  mikrodenetleyiciye göre değişir ve genelde on binler mertebesindedir. SH68F90 için kesin değeri doğrulamadık.
+- **Animasyonu flash üzerinden sürmek klavyeyi hızla yıpratır.** Bazı araçlar "direct" modda her karede flash'a
+  yazan bir komut kullanır (OpenRGB'nin devre dışı bırakılmış SinoWealth sürücüsü `06 09 BC…` gibi). Örneğin
+  dayanıklılık 10.000 döngü olsaydı, saniyede 30 kare ile bu sınıra **yaklaşık 6 dakikada** ulaşılırdı.
+- **Yıpranan sektör ayarları bozar.** Profil sektörü bozulursa klavye açılışta ayarlarını yükleyemez ya da
+  tutarsız davranır. Bir sektörün yanlış adrese yazılması ise firmware'in kendisini silebilir.
+
+Bu yüzden:
+
+- Canlı efektler, tuş boyama ve katmanlar için hiçbir zaman flash'a yazılmaz; istediğiniz kadar kullanabilirsiniz.
+- `k78ctl.py persist` yalnızca klavyenin **kendi** efekt ayarlarını kalıcı yapmak için vardır ve her çalıştırma
+  bir sektör silme demektir. Gerçekten gerektiğinde, elle kullanın; script'lerde veya döngülerde **kullanmayın**.
+- Klavyenin kendi Fn ayarlarını da firmware flash'a kaydeder; sık sık değiştirmeye gerek yoksa bırakın.
+
 ## Gereksinimler
 
 - Windows 10/11

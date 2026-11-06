@@ -15,6 +15,27 @@ Live per-key RGB effects with no vendor software and **no flash writes**.
 - **Profiles**, system tray mode, start with Windows, and a choice of what the keyboard shows when the app quits.
 - **Command-line tool** (`k78ctl.py`): colour/key/pixel commands, protocol reads, guarded persistent profile writes.
 
+## Use it without writing to flash — about flash wear
+
+This app sends effects **only to the keyboard's RAM** (report 8). It never touches the keyboard's flash memory,
+and that is deliberate:
+
+- **Flash has a limited lifetime.** Every write means erasing a sector and programming it again (the K78's
+  profile sector is 512 bytes). Flash cells wear out after a limited number of erase cycles; the limit depends on
+  the microcontroller and is typically in the tens of thousands. We have not verified the exact figure for the SH68F90.
+- **Driving animation through flash wears the keyboard out fast.** Some tools use a "direct" mode that writes
+  flash on every frame (for example OpenRGB's now-disabled SinoWealth driver with `06 09 BC…`). If the endurance
+  were 10,000 cycles, 30 frames per second would reach that limit in **about 6 minutes**.
+- **A worn sector corrupts settings.** If the profile sector goes bad, the keyboard may fail to load its
+  settings at power-up or behave inconsistently. Writing a sector at the wrong address can erase the firmware itself.
+
+So:
+
+- Live effects, key painting and layers never write to flash; use them as much as you like.
+- `k78ctl.py persist` exists only to make the keyboard's **own** effect settings permanent, and every run erases
+  a sector. Use it by hand, only when you really need it; **do not** put it in scripts or loops.
+- The firmware also saves the keyboard's own Fn settings to flash; if you don't need to change them often, leave them be.
+
 ## Requirements
 
 - Windows 10/11
