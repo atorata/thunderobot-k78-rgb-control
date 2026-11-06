@@ -1,11 +1,9 @@
 # Thunderobot K78 RGB Control
 
+**Türkçe** · [English](README.en.md)
+
 Thunderobot K78 (kablolu, SinoWealth SH68F90, USB `258A:0049`) klavyesi için açık kaynak RGB kontrol uygulaması.
 Üretici yazılımına gerek kalmadan, **flash'a yazmadan** tuş başına canlı RGB efektleri.
-
-> *English summary:* An open-source RGB controller for the Thunderobot K78 (SinoWealth SH68F90, USB `258A:0049`).
-> It drives per-key RGB live through a RAM-only HID feature report, never touching flash for effects.
-> Windows only, pure Python standard library (no dependencies). See [docs/PROTOCOL.md](docs/PROTOCOL.md) for the reverse-engineered protocol.
 
 ## Özellikler
 
