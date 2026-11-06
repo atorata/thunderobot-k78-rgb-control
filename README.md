@@ -41,6 +41,22 @@ Bu yüzden:
 - Python 3.10+ (yalnızca standart kütüphane; tkinter dahil)
 - Thunderobot K78, VID/PID `258A:0049`. Aynı VID/PID başka klavyelerde de kullanılıyor — aşağıdaki uyarıya bakın.
 
+## Kurulum (Windows)
+
+`K78RGB-Setup-1.0.0.exe` kurulum programı:
+
+- Yönetici izni istemez; kullanıcının kendi `Programs` klasörüne kurulur. Python gerekmez.
+- Başlat menüsü kısayolu; isteğe bağlı masaüstü kısayolu ve "Windows açılışında başlat".
+- Ayarlar `%APPDATA%\K78RGB` altında tutulur ve kaldırırken silinmez.
+- Program dijital imzalı değildir; Windows SmartScreen "tanınmayan uygulama" uyarısı gösterebilir
+  (**Ek bilgi → Yine de çalıştır**).
+
+Kurulum programını kendiniz derlemek için Python 3.10+ ve [Inno Setup](https://jrsoftware.org/isinfo.php) gerekir:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1   # dist\K78RGB\ ve release\K78RGB-Setup-1.0.0.exe
+```
+
 ## Kullanım
 
 ```powershell

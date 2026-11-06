@@ -67,12 +67,15 @@ user32.DestroyWindow.argtypes = [W.HWND]
 user32.SetForegroundWindow.argtypes = [W.HWND]
 user32.GetMessageW.argtypes = [ctypes.POINTER(W.MSG), W.HWND, W.UINT, W.UINT]
 shell32.Shell_NotifyIconW.argtypes = [W.DWORD, ctypes.POINTER(NOTIFYICONDATAW)]
+shell32.ExtractIconW.restype = W.HICON
+shell32.ExtractIconW.argtypes = [W.HINSTANCE, W.LPCWSTR, W.UINT]
 kernel32.GetModuleHandleW.restype = W.HMODULE
 
 
 class TrayIcon:
-    def __init__(self, tooltip="K78"):
+    def __init__(self, tooltip="K78", icon_file=None):
         self.tooltip = tooltip
+        self.icon_file = icon_file          # .ico ya da simgeli .exe yolu
         self.events = queue.Queue()
         self.hwnd = None
         self._ready = threading.Event()
@@ -134,7 +137,12 @@ class TrayIcon:
         nid = self._nid()
         nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP
         nid.uCallbackMessage = WM_TRAY
-        nid.hIcon = user32.LoadIconW(None, ctypes.c_void_p(IDI_APPLICATION))
+        hicon = None
+        if self.icon_file:
+            h = shell32.ExtractIconW(hinst, self.icon_file, 0)
+            if h and h != 1:                      # 1 = dosya simge içermiyor
+                hicon = h
+        nid.hIcon = hicon or user32.LoadIconW(None, ctypes.c_void_p(IDI_APPLICATION))
         nid.szTip = self.tooltip[:127]
         shell32.Shell_NotifyIconW(NIM_ADD, ctypes.byref(nid))
         self._ready.set()

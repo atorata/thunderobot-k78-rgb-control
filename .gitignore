@@ -2,6 +2,12 @@
 __pycache__/
 *.pyc
 
+# Derleme çıktıları
+.build-venv/
+build/
+dist/
+release/
+
 # Üreticinin firmware'inden türetilen içerik (telif hakkı üreticiye ait) — yayınlanmaz
 *.bin
 *.hex

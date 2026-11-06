@@ -42,6 +42,22 @@ So:
 - Python 3.10+ (standard library only; tkinter included)
 - Thunderobot K78, VID/PID `258A:0049`. Other keyboards reuse this VID/PID — see the warning below.
 
+## Installation (Windows)
+
+The `K78RGB-Setup-1.0.0.exe` installer:
+
+- Needs no administrator rights; installs into the user's own `Programs` folder. No Python required.
+- Adds a Start menu shortcut, plus an optional desktop shortcut and "Start with Windows".
+- Keeps settings in `%APPDATA%\K78RGB`; uninstalling leaves them in place.
+- Is not code-signed, so Windows SmartScreen may show an "unrecognized app" warning
+  (**More info → Run anyway**).
+
+To build the installer yourself you need Python 3.10+ and [Inno Setup](https://jrsoftware.org/isinfo.php):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1   # dist\K78RGB\ and release\K78RGB-Setup-1.0.0.exe
+```
+
 ## Usage
 
 ```powershell

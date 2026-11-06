@@ -15,6 +15,7 @@ import ctypes.wintypes as W
 import json
 import math
 import os
+import sys
 import threading
 import time
 
@@ -284,7 +285,14 @@ class Engine:
         return bool(self._thread and self._thread.is_alive())
 
 
-PROFILE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "profiles")
+def data_dir():
+    """Kurulu .exe'de kullanıcı verisi %APPDATA%\\K78RGB'de; kaynaktan çalışırken script klasöründe."""
+    if getattr(sys, "frozen", False):
+        return os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "K78RGB")
+    return os.path.dirname(os.path.abspath(__file__))
+
+
+PROFILE_DIR = os.path.join(data_dir(), "profiles")
 
 
 if __name__ == "__main__":

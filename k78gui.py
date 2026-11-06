@@ -79,7 +79,21 @@ PALETTE = [(255, 255, 255), (255, 40, 40), (255, 130, 0), (255, 220, 0), (40, 23
 
 
 # ------------------------------------------------------------------ otomatik başlatma
+APP_VERSION = "1.0.0"
+FROZEN = getattr(sys, "frozen", False)
+
+
+def icon_path():
+    """Kurulu .exe kendi simgesini taşır; kaynaktan çalışırken assets/k78.ico."""
+    if FROZEN:
+        return sys.executable
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "k78.ico")
+    return p if os.path.exists(p) else None
+
+
 def autostart_command():
+    if FROZEN:
+        return '"%s" --tray' % sys.executable
     exe = sys.executable
     pyw = os.path.join(os.path.dirname(exe), "pythonw.exe")
     if os.path.exists(pyw):
@@ -390,6 +404,11 @@ class App(tk.Tk):
         self.title("K78 Işık Kontrolü")
         self.configure(bg=C["bg"])
         self.minsize(1180, 800)
+        if icon_path():
+            try:
+                self.iconbitmap(default=icon_path())
+            except tk.TclError:
+                pass
         self.engine = Engine()
         if os.path.exists(LAST_PROFILE):
             try:
@@ -407,7 +426,7 @@ class App(tk.Tk):
         self._synth_next = 0.0
         self._build()
         self.protocol("WM_DELETE_WINDOW", self._hide)
-        self.tray = TrayIcon("K78 Işık Kontrolü")
+        self.tray = TrayIcon("K78 Işık Kontrolü", icon_path())
         self.tray.start()
         self.engine.start()
         self._goto("effects")
@@ -834,7 +853,7 @@ class App(tk.Tk):
 
         bottom = tk.Frame(p, bg=C["bg"])
         bottom.pack(fill="x", pady=(4, 0))
-        tk.Label(bottom, text="258A:0049 · SH68F90 · canlı efektler report 8 ile yalnızca RAM'e gönderilir",
+        tk.Label(bottom, text="v%s · 258A:0049 · SH68F90 · canlı efektler report 8 ile yalnızca RAM'e gönderilir" % APP_VERSION,
                  bg=C["bg"], fg=C["faint"], font=F(8)).pack(side="left")
         button(bottom, "Uygulamadan çık", self._quit, kind="danger").pack(side="right")
 
@@ -939,5 +958,29 @@ class App(tk.Tk):
         self.destroy()
 
 
+_INSTANCE_MUTEX = None
+
+
+def already_running(show_existing):
+    """Tek örnek: aynı oturumda ikinci kopya açılmaz; istenirse mevcut pencere öne getirilir."""
+    global _INSTANCE_MUTEX
+    import ctypes
+    from k78tray import WM_LBUTTONDBLCLK, WM_TRAY
+    k32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    k32.CreateMutexW.restype = ctypes.c_void_p
+    _INSTANCE_MUTEX = k32.CreateMutexW(None, False, "Local\\K78RGB_SingleInstance")
+    if ctypes.get_last_error() != 183:            # ERROR_ALREADY_EXISTS değil
+        return False
+    if show_existing:
+        u32 = ctypes.windll.user32
+        u32.FindWindowW.restype = ctypes.c_void_p
+        hwnd = u32.FindWindowW("K78TrayWindow", None)
+        if hwnd:
+            u32.PostMessageW(ctypes.c_void_p(hwnd), WM_TRAY, 0, WM_LBUTTONDBLCLK)
+    return True
+
+
 if __name__ == "__main__":
-    App(start_hidden="--tray" in sys.argv).mainloop()
+    tray_start = "--tray" in sys.argv
+    if not already_running(show_existing=not tray_start):
+        App(start_hidden=tray_start).mainloop()

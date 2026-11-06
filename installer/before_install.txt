@@ -1,0 +1,21 @@
+K78 RGB — Thunderobot K78 RGB kontrolü
+
+Bu uygulama yalnızca Thunderobot K78 klavyesi (USB 258A:0049) için yazılmıştır.
+Aynı USB kimliğini kullanan başka klavyelerde KULLANMAYIN.
+
+Canlı efektler klavyenin yalnızca RAM'ine gönderilir; klavyenin flash belleğine yazılmaz.
+Uygulamadan çıkınca klavyenin kendi efektlerine Fn ile ya da kabloyu çıkarıp takarak dönersiniz.
+
+Ayarlarınız %APPDATA%\K78RGB klasöründe saklanır ve kaldırma sırasında silinmez.
+
+------------------------------------------------------------
+
+K78 RGB — RGB control for the Thunderobot K78
+
+This app is written only for the Thunderobot K78 keyboard (USB 258A:0049).
+Do NOT use it with other keyboards that share this USB ID.
+
+Live effects are sent only to the keyboard's RAM; the keyboard's flash memory is never written.
+After quitting, press Fn or replug the keyboard to return to its built-in effects.
+
+Your settings are stored in %APPDATA%\K78RGB and are kept when you uninstall.
